@@ -1,5 +1,6 @@
 ﻿using SpeechAPI.Interfaces;
 using Microsoft.CognitiveServices.Speech;
+using Microsoft.CognitiveServices.Speech.Audio;
 
 namespace SpeechAPI.Repositories
 {
@@ -24,14 +25,13 @@ namespace SpeechAPI.Repositories
             }
         }
 
-        public async Task<string> SpeechToTextAsync(byte[] audioData)
+        public async Task<string> SpeakToTextAsync(byte[] audioData, AudioConfig audioConfig)
         {
             _speechConfig.SpeechRecognitionLanguage = "pt-BR";
 
-            using (var recognizer = new SpeechRecognizer(_speechConfig))
+            using (var recognizer = new SpeechRecognizer(_speechConfig, audioConfig))
             {
                 var result = await recognizer.RecognizeOnceAsync();
-
                 return result.Text;
             }
         }

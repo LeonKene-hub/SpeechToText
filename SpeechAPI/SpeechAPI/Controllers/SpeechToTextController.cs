@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CognitiveServices.Speech.Audio;
+using Microsoft.CognitiveServices.Speech;
 using SpeechAPI.Services;
 
 namespace SpeechAPI.Controllers
@@ -13,18 +15,34 @@ namespace SpeechAPI.Controllers
         public SpeechToTextController(SpeechToTextService speechToTextService)
         {
             _speechToTextService = speechToTextService;
+
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConvertSpeechToTextAsync()
+        public async Task<IActionResult> ConvertSpeechToTextAsync(IFormFile file)
         {
-            using (var memoryStream = new MemoryStream())
+            if (file == null)
+                return BadRequest("Arquivo vazio ou não recebido.");
+
+            var _speechConfig = SpeechConfig.FromSubscription("", "brazilsouth");
+
+            using var stream = file.OpenReadStream();
+
+            var reader = new BinaryReader(stream);
+            using var audioConfigStream = AudioInputStream.CreatePushStream();
+            using var audioConfig = AudioConfig.FromStreamInput(audioConfigStream);
+
+            var recognizer = new SpeechRecognizer(_speechConfig, "pt-BR", audioConfig);
+
+            byte[] readBytes;
+            do
             {
-                await Request.Body.CopyToAsync(memoryStream);
-                var audioData = memoryStream.ToArray();
-                var text = await _speechToTextService.ConvertSpeechToTextAsync(audioData);
-                return Ok(text);
-            }
+                readBytes = reader.ReadBytes(1024);
+                audioConfigStream.Write(readBytes, readBytes.Length);
+            } while (readBytes.Length > 0);
+
+            var text = await recognizer.RecognizeOnceAsync();
+            return Ok(text.Text);
         }
     }
 }

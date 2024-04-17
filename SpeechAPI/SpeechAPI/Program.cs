@@ -2,9 +2,7 @@ using Microsoft.Extensions.Configuration;
 using SpeechAPI.Interfaces;
 using SpeechAPI.Repositories;
 using SpeechAPI.Services;
-using SpeechAPI.Interfaces;
-using SpeechAPI.Repositories;
-using SpeechAPI.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

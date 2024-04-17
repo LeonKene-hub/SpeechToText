@@ -1,8 +1,10 @@
-﻿namespace SpeechAPI.Interfaces
+﻿using Microsoft.CognitiveServices.Speech.Audio;
+
+namespace SpeechAPI.Interfaces
 {
     public interface ISpeechRepository
     {
         Task<byte[]> TextToSpeechAsync(string text);
-        Task<string> SpeechToTextAsync(byte[] audioData);
+        Task<string> SpeakToTextAsync(byte[] audioData, AudioConfig audioConfig);
     }
 }
