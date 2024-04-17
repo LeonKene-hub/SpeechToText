@@ -1,0 +1,6 @@
+@SpeechAPI_HostAddress = http://localhost:5112
+
+GET {{SpeechAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
