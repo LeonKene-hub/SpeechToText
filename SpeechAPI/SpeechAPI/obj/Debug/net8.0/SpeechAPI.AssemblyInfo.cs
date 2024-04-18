@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SpeechAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+813904821f0c6293a0f357ad75dd67532f49f13e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6eec066f621146b4587b08c2cc8cd72811202f3b")]
 [assembly: System.Reflection.AssemblyProductAttribute("SpeechAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SpeechAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
