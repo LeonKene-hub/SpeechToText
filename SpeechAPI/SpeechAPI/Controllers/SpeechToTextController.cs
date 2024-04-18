@@ -17,33 +17,60 @@ namespace SpeechAPI.Controllers
             _speechToTextService = speechToTextService;
 
         }
-
         [HttpPost]
-        public async Task<IActionResult> ConvertSpeechToTextAsync(IFormFile file)
+        public async Task<IActionResult> ConvertSpeechToTextAndSaveAsync(IFormFile audioFile)
         {
-            if (file == null)
-                return BadRequest("Arquivo vazio ou não recebido.");
-
-            var _speechConfig = SpeechConfig.FromSubscription("", "brazilsouth");
-
-            using var stream = file.OpenReadStream();
-
-            var reader = new BinaryReader(stream);
-            using var audioConfigStream = AudioInputStream.CreatePushStream();
-            using var audioConfig = AudioConfig.FromStreamInput(audioConfigStream);
-
-            var recognizer = new SpeechRecognizer(_speechConfig, "pt-BR", audioConfig);
-
-            byte[] readBytes;
-            do
+            if (audioFile == null || audioFile.Length == 0)
             {
-                readBytes = reader.ReadBytes(1024);
-                audioConfigStream.Write(readBytes, readBytes.Length);
-            } while (readBytes.Length > 0);
+                return BadRequest("Nenhum arquivo de áudio enviado.");
+            }
 
-            var text = await recognizer.RecognizeOnceAsync();
-            return Ok(text.Text);
+            try
+            {
+                var uploadFolderPath = "audio/audiowav";
+
+                if (!Directory.Exists(uploadFolderPath))
+                {
+                    Directory.CreateDirectory(uploadFolderPath);
+                }
+
+                if (Path.GetExtension(audioFile.FileName).ToLower() != ".wav")
+                {
+                    var tempFileName = Guid.NewGuid().ToString() + ".wav";
+                    var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
+
+                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
+                    {
+                        await audioFile.CopyToAsync(fileStream);
+                    }
+
+                    // Usa o serviço de conversão para converter o arquivo para .wav
+                    var audioConversionService = new AudioConversionService();
+                    audioConversionService.ConvertToWav(tempFilePath, tempFilePath);
+
+                    audioFile = new FormFile(new FileStream(tempFilePath, FileMode.Open), 0, new FileInfo(tempFilePath).Length, audioFile.Name, audioFile.FileName);
+                }
+
+                var audioFileName = Guid.NewGuid().ToString() + ".wav";
+                var filePath = Path.Combine(uploadFolderPath, audioFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await audioFile.CopyToAsync(fileStream);
+                }
+
+                var azureSpeechService = new AzureSpeechService("c31fac9120784f96b1a7a0ee827bf6f9", "pt-BR");
+                var transcription = await azureSpeechService.TranscribeAudio(filePath);
+
+                return Ok($"Transcrição do áudio: {transcription}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ocorreu um erro ao salvar o arquivo de áudio: {ex.Message}");
+            }
         }
+
     }
 }
+
 
